@@ -1,0 +1,245 @@
+/**
+ * KC EVENT - GALLERY DATA
+ * Dữ liệu ảnh thực tế từ thư mục kcevent, phân loại chuẩn SEO
+ * phục vụ hiển thị thư viện ảnh, bộ lọc và tương tác Lightbox.
+ */
+const galleryItems = [
+  {
+    id: "gala-ntx",
+    category: "gala",
+    categoryName: "Gala Dinner",
+    title: "Gala Dinner NTX Group - Together We Shine",
+    client: "NTX Group",
+    location: "Hạ Long, Quảng Ninh",
+    src: "kcevent/1787707051829_3841158694527403612_3841158694527403612_1ac3a2a78e84825aa261c06454fd4411.jpg",
+    width: 2560,
+    height: 1706,
+    alt: "Tổ chức Gala Dinner Company Trip NTX Group chuyên nghiệp bởi KC Event",
+    description: "Đêm tiệc Gala Dinner kỷ niệm Company Trip đầy cảm xúc với sân khấu LED hiện đại và hơn 150 khách mời doanh nghiệp."
+  },
+  {
+    id: "khoi-cong-genesis",
+    category: "event",
+    categoryName: "Sự Kiện & Khởi Công",
+    title: "Lễ Khởi Công Dự Án TT Genesis",
+    client: "Ricons Construction & TT Capital",
+    location: "TP. Hồ Chí Minh",
+    src: "kcevent/1787707150759_3841158694527403612_3841158694527403612_468a525bec357de0da99db3dbae55f70.jpg",
+    width: 1920,
+    height: 1080,
+    alt: "Tổ chức Lễ Khởi công dự án TT Genesis Ricons quy mô chuyên nghiệp",
+    description: "Sự kiện khởi công đại dự án bất động sản quy tụ hàng trăm quan khách VIP, chủ đầu tư và đối tác quốc tế Koterasu Nhật Bản."
+  },
+  {
+    id: "tb-hatu-beach",
+    category: "teambuilding",
+    categoryName: "Team Building",
+    title: "Team Building Bãi Biển - Gắn Kết Để Bứt Phá",
+    client: "Hatu Group",
+    location: "Bãi biển Resort cao cấp",
+    src: "kcevent/1787707150875_3841158694527403612_3841158694527403612_0450ccaed829b468461ddcbd57363bc1.jpg",
+    width: 2048,
+    height: 1365,
+    alt: "Tổ chức Team Building bãi biển cho tập đoàn Hatu Group sôi động",
+    description: "Chương trình Team Building bãi biển tràn đầy năng lượng với cổng hơi khổng lồ, trò chơi đối kháng đồng đội và kịch bản độc quyền."
+  },
+  {
+    id: "khoi-cong-ducviet",
+    category: "event",
+    categoryName: "Sự Kiện & Khởi Công",
+    title: "Lễ Khởi Công Bệnh Viện Đa Khoa Đức Việt",
+    client: "Bệnh Viện Đa Khoa Đức Việt",
+    location: "Hà Nội",
+    src: "kcevent/1787707051860_3841158694527403612_3841158694527403612_43ba427c38b5ca561cbc365fc9e7eae5.jpg",
+    width: 2560,
+    height: 1706,
+    alt: "Lễ Khởi công Bệnh viện Đa khoa Đức Việt quy mô lớn tại Hà Nội",
+    description: "Hội trường nhà bạt không gian điều hòa tiêu chuẩn cao phục vụ hơn 500 quan khách cấp cao và đại biểu tham dự."
+  },
+  {
+    id: "nghi-thuc-ducviet",
+    category: "event",
+    categoryName: "Sự Kiện & Khởi Công",
+    title: "Nghi Thức Động Thổ & Múa Lân Khởi Công",
+    client: "Bệnh Viện Đa Khoa Đức Việt",
+    location: "Hà Nội",
+    src: "kcevent/1787707051872_3841158694527403612_3841158694527403612_aa48662fe6b0515debc10adc6ee4516d.jpg",
+    width: 2560,
+    height: 1706,
+    alt: "Nghi thức xúc cát động thổ và múa lân sư rồng cầu may mắn",
+    description: "Nghi lễ trang trọng với pháo hoa sáng rực, múa Lân Sư Rồng, Thần Tài may mắn và nghi thức xúc cát động thổ chuẩn phong thủy."
+  },
+  {
+    id: "khai-truong-vinfast",
+    category: "event",
+    categoryName: "Sự Kiện & Khởi Công",
+    title: "Grand Opening Showroom VinFast Quốc Tế",
+    client: "VinFast Thanh Hà",
+    location: "Khu đô thị Thanh Hà, Hà Nội",
+    src: "kcevent/1787707150895_3841158694527403612_3841158694527403612_e36bde1d59fdd88a696c1c0fbfb8552c.jpg",
+    width: 2048,
+    height: 1365,
+    alt: "Lễ Khai trương Showroom VinFast Quốc Tế Thanh Hà hoành tráng",
+    description: "Tổ chức trọn gói lễ khai trương showroom xe điện VinFast với photobooth hoa tươi, cổng bóng nghệ thuật và tiệc chúc mừng."
+  },
+  {
+    id: "khai-truong-lotteria",
+    category: "event",
+    categoryName: "Sự Kiện & Khởi Công",
+    title: "Khai Trương Cửa Hàng Lotteria Goldmark City",
+    client: "Lotteria Việt Nam",
+    location: "Tòa ROX Center, Hà Nội",
+    src: "kcevent/1787707051846_3841158694527403612_3841158694527403612_809ae9d9dc57039f4b7774f6701ce318.jpg",
+    width: 2560,
+    height: 1706,
+    alt: "Lễ khai trương cửa hàng ẩm thực Lotteria tại khu đô thị Goldmark City",
+    description: "Sân khấu check-in năng động, rực rỡ sắc màu thu hút đông đảo khách hàng và cư dân tham gia trải nghiệm."
+  },
+  {
+    id: "gala-catba",
+    category: "travel",
+    categoryName: "Tour Du Lịch",
+    title: "Tour Company Trip & Gala Dinner Cát Bà",
+    client: "Trường Thịnh Logistics",
+    location: "Đảo Ngọc Cát Bà, Hải Phòng",
+    src: "kcevent/1787707051870_3841158694527403612_3841158694527403612_3c7fa5b02c600550885ed382a5ed5ba8.jpg",
+    width: 2560,
+    height: 1706,
+    alt: "Tour du lịch Cát Bà kết hợp Gala Dinner Chạm Sóng Chạm Yêu Thương",
+    description: "Hành trình Company Trip 3 ngày 2 đêm khám phá vịnh Lan Hạ, kết hợp đêm tiệc Gala Dinner ấm cúng gắn kết tập thể."
+  },
+  {
+    id: "banquet-setup",
+    category: "gala",
+    categoryName: "Gala Dinner",
+    title: "Không Gian Tiệc Gala Đẳng Cấp 5 Sao",
+    client: "Khách Sạn & Trung Tâm Hội Nghị",
+    location: "Ballroom cao cấp",
+    src: "kcevent/1787707051874_3841158694527403612_3841158694527403612_b4283ad11e137c175e534b4b925e35bd.jpg",
+    width: 2560,
+    height: 1706,
+    alt: "Setup bàn tiệc Gala Dinner phong cách quý phái sang trọng",
+    description: "Bày trí bàn tiệc tròn tiêu chuẩn tiệc chiêu đãi quốc tế, khăn ăn nghệ thuật, hệ thống ánh sáng ấm áp và sân khấu màn hình LED."
+  },
+  {
+    id: "yep-iscvina",
+    category: "gala",
+    categoryName: "Gala Dinner",
+    title: "Year End Party - Nhiệt Huyết ISCVina",
+    client: "ISC Vina",
+    location: "Phú Thọ",
+    src: "kcevent/1787707051854_3841158694527403612_3841158694527403612_296e6a17ae3f5fc2cdb9dd0fa1209685.jpg",
+    width: 2560,
+    height: 1706,
+    alt: "Backdrop 3D ấn tượng Year End Party công ty ISC Vina",
+    description: "Thiết kế photobooth 3D vòm cánh cung hiện đại, hiệu ứng LED viền nổi bật truyền tải thông điệp bứt phá của doanh nghiệp."
+  },
+  {
+    id: "tb-pvchem",
+    category: "teambuilding",
+    categoryName: "Team Building",
+    title: "Ngày Hội Thể Thao PVChem 35 Năm",
+    client: "PetroVietnam PVChem",
+    location: "Flamingo Đại Lải Resort",
+    src: "kcevent/1787707051880_3841158694527403612_3841158694527403612_0387741570d3cc1929249f01a6516e9b.jpg",
+    width: 2560,
+    height: 1707,
+    alt: "Giải đấu giao lưu thể thao Pickleball kỷ niệm 35 năm PetroVietnam PVChem",
+    description: "Tổ chức trọn gói ngày hội thể thao ngoài trời kết hợp nghỉ dưỡng resort cho cán bộ công nhân viên tập đoàn dầu khí PVChem."
+  },
+  {
+    id: "tb-outdoor-plaza",
+    category: "teambuilding",
+    categoryName: "Team Building",
+    title: "Team Building Quảng Trường 500+ Khách",
+    client: "Tập Đoàn Đa Quốc Gia",
+    location: "Khu du lịch sinh thái",
+    src: "kcevent/1787707078625_3841158694527403612_3841158694527403612_027e2a4f5f413185bbba749ddc69ee4b.jpg",
+    width: 1276,
+    height: 956,
+    alt: "Quy mô Team Building ngoài trời hơn 500 thành viên đồng phục xanh",
+    description: "Điều phối chuyên nghiệp sự kiện teambuilding quy mô lớn với kịch bản liên hoàn, âm thanh công suất lớn và MC hoạt náo nhiệt huyết."
+  },
+  {
+    id: "hoi-nghi-vars",
+    category: "event",
+    categoryName: "Sự Kiện & Khởi Công",
+    title: "Hội Nghị Bất Động Sản Quốc Gia VARS Awards",
+    client: "Strantech & VARS",
+    location: "Trung tâm hội nghị quốc gia",
+    src: "kcevent/1787707150820_3841158694527403612_3841158694527403612_64ff69c6b476db3e2d017c8c776ba9d7.jpg",
+    width: 1280,
+    height: 960,
+    alt: "Không gian sảnh check-in sang trọng Ngày hội môi giới bất động sản VARS",
+    description: "Hệ thống chữ nổi phát sáng 3D Strantech cùng backdrop vinh danh quy tụ hơn 1.000 chuyên gia và lãnh đạo ngành BĐS."
+  },
+  {
+    id: "san-khau-sondong",
+    category: "event",
+    categoryName: "Sự Kiện & Khởi Công",
+    title: "Lễ Kỷ Niệm 20 Năm Nhiệt Điện Sơn Động TKV",
+    client: "Tổng Công Ty Điện Lực - TKV",
+    location: "Bắc Giang",
+    src: "kcevent/1787707150796_3841158694527403612_3841158694527403612_1d449f68839225777e3e5f8f86cd00d8.jpg",
+    width: 2048,
+    height: 1152,
+    alt: "Thiết kế sân khấu kỷ niệm 20 năm thành lập Công ty Nhiệt điện Sơn Động TKV",
+    description: "Sân khấu lễ kỷ niệm hoành tráng ngoài trời mang biểu tượng 'Nền Tảng Bứt Phá Tương Lai' với nhận diện thương hiệu chuẩn xác."
+  },
+  {
+    id: "teabreak-catering",
+    category: "event",
+    categoryName: "Sự Kiện & Khởi Công",
+    title: "Tiệc Ngọt Teabreak Khách Hàng Cao Cấp",
+    client: "Showroom Auto Launch",
+    location: "Hà Nội",
+    src: "kcevent/1787707150893_3841158694527403612_3841158694527403612_07ead71eee6fb93f847cc74bdcebf898.jpg",
+    width: 2048,
+    height: 1365,
+    alt: "Bàn tiệc ngọt teabreak hoa tươi và bánh ngọt cao cấp phục vụ sự kiện",
+    description: "Trang trí bàn tiệc finger food và bánh ngọt phong cách Pháp, hoa tươi sang trọng nâng tầm trải nghiệm khách mời sự kiện."
+  },
+  {
+    id: "gala-art-performance",
+    category: "gala",
+    categoryName: "Gala Dinner",
+    title: "Tiết Mục Biểu Diễn Nghệ Thuật Đêm Gala",
+    client: "Doanh Nghiệp Trẻ",
+    location: "Sân khấu trung tâm",
+    src: "kcevent/1787707061517_3841158694527403612_3841158694527403612_68e51e6da3959ff231e188ece46099a0.jpg",
+    width: 2048,
+    height: 1365,
+    alt: "Chương trình nghệ thuật và âm nhạc bùng nổ sân khấu tiệc công ty",
+    description: "Không khí bùng nổ với các tiết mục nhảy hiện đại, ca sĩ chuyên nghiệp và hiệu ứng ánh sáng beam sân khấu ngoạn mục."
+  },
+  {
+    id: "yep-traditional",
+    category: "gala",
+    categoryName: "Gala Dinner",
+    title: "Tiệc Tất Niên Tri Ân & Trao Thưởng",
+    client: "Doanh Nghiệp Xuất Sắc",
+    location: "Khuôn viên sự kiện",
+    src: "kcevent/1787707051884_3841158694527403612_3841158694527403612_756516ad0f2586e71d0f3895989984df.jpg",
+    width: 2560,
+    height: 1706,
+    alt: "Không khí tưng bừng trao giải và tri ân tiệc tất niên doanh nghiệp",
+    description: "Đêm tiệc tri ân ấm áp kết hợp trang phục truyền thống, chương trình bốc thăm may mắn và các giải thưởng giá trị lớn."
+  },
+  {
+    id: "tb-action-energy",
+    category: "teambuilding",
+    categoryName: "Team Building",
+    title: "Thử Thách Vượt Chướng Ngại Vật Đồng Đội",
+    client: "Khách Đoàn Doanh Nghiệp",
+    location: "Khu dã ngoại sinh thái",
+    src: "kcevent/1787707078674_3841158694527403612_3841158694527403612_75be9f02f34dcbb340db76744d760adf.jpg",
+    width: 1276,
+    height: 956,
+    alt: "Trò chơi teambuilding đối kháng kích thích tinh thần lãnh đạo",
+    description: "Các chuỗi thử thách vận động liên hoàn giúp phá vỡ rào cản, xây dựng tinh thần đồng đội và nâng cao kỹ năng phối hợp."
+  }
+];
+
+if (typeof Object.freeze === 'function') {
+  Object.freeze(galleryItems);
+}
