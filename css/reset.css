@@ -15,7 +15,7 @@ html {
   background-color: var(--color-bg-body);
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  text-rendering: optimizeLegibility;
+  text-rendering: speed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
