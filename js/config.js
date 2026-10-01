@@ -28,6 +28,9 @@ const siteConfig = {
     country: "Việt Nam",
     workingHours: "Thứ 2 - Thứ 7: 08:00 - 18:30 (Hỗ trợ Hotline 24/7)"
   },
+  // URL Web App Google Apps Script (xem google-apps-script/lead-form.gs).
+  // Để trống: form sẽ mở email soạn sẵn gửi tới contact.email.
+  leadEndpoint: "",
   social: {
     facebook: "https://facebook.com/kcevent.vn",
     zalo: "https://zalo.me/0981941820",

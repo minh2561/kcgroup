@@ -1,567 +1,455 @@
 /**
- * KC EVENT - CORE JAVASCRIPT
- * Modern Vanilla JS - Modular, Accessible, Zero Dependencies
+ * KC EVENT – MAIN SCRIPT (vanilla, no dependencies)
  */
-
 (function () {
   'use strict';
 
-  // Global State
-  let currentLightboxIndex = 0;
-  let activeGalleryItems = [];
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const cfg = typeof siteConfig !== 'undefined' ? siteConfig : null;
+  let lastFocus = null;
 
   document.addEventListener('DOMContentLoaded', () => {
-    initDynamicConfig();
-    initStickyHeader();
-    initMobileNav();
-    initSmoothScroll();
+    bindConfig();
+    initTheme();
+    initHeader();
+    initDrawer();
+    initTabs();
+    initHashNavigation();
     initGallery();
-    initLightbox();
-    initQuoteModal();
-    initFormValidation();
+    initModal();
+    initForms();
+    initReveal();
   });
 
-  /* ==========================================================================
-     1. DYNAMIC CONFIGURATION POPULATION
-     ========================================================================== */
-  function initDynamicConfig() {
-    if (typeof siteConfig === 'undefined') return;
-
-    // Hotline and Phone Links
-    document.querySelectorAll('[data-bind="hotline"]').forEach(el => {
-      el.textContent = siteConfig.contact.hotlineDisplay;
-    });
-
-    document.querySelectorAll('[data-bind="hotline-link"]').forEach(el => {
-      el.setAttribute('href', `tel:${siteConfig.contact.hotlineRaw}`);
-    });
-
-    // Email Links
-    document.querySelectorAll('[data-bind="email"]').forEach(el => {
-      el.textContent = siteConfig.contact.email;
-    });
-
-    document.querySelectorAll('[data-bind="email-link"]').forEach(el => {
-      el.setAttribute('href', `mailto:${siteConfig.contact.email}`);
-    });
-
-    // Address & Legal
-    document.querySelectorAll('[data-bind="address"]').forEach(el => {
-      el.textContent = siteConfig.contact.address;
-    });
-
-    document.querySelectorAll('[data-bind="tax-code"]').forEach(el => {
-      el.textContent = siteConfig.brand.taxCode;
-    });
-
-    document.querySelectorAll('[data-bind="legal-name"]').forEach(el => {
-      el.textContent = siteConfig.brand.legalName;
-    });
-
-    // Dynamic Year
-    document.querySelectorAll('[data-bind="current-year"]').forEach(el => {
-      el.textContent = new Date().getFullYear();
-    });
+  /* ---------- Config binding ---------- */
+  function bindConfig() {
+    if (!cfg) return;
+    const set = (sel, fn) => $$(sel).forEach(fn);
+    set('[data-bind="hotline"]', el => { el.textContent = cfg.contact.hotlineDisplay; });
+    set('[data-bind="hotline-link"]', el => { el.href = 'tel:' + cfg.contact.hotlineRaw; });
+    set('[data-bind="email"]', el => { el.textContent = cfg.contact.email; });
+    set('[data-bind="email-link"]', el => { el.href = 'mailto:' + cfg.contact.email; });
+    set('[data-bind="address"]', el => { el.textContent = cfg.contact.address; });
+    set('[data-bind="tax-code"]', el => { el.textContent = cfg.brand.taxCode; });
+    set('[data-bind="legal-name"]', el => { el.textContent = cfg.brand.legalName; });
+    set('[data-bind="current-year"]', el => { el.textContent = new Date().getFullYear(); });
   }
 
-  /* ==========================================================================
-     2. STICKY HEADER & SCROLL BEHAVIOR
-     ========================================================================== */
-  function initStickyHeader() {
-    const header = document.querySelector('.site-header');
-    if (!header) return;
+  /* ---------- Theme ---------- */
+  function initTheme() {
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const stored = () => { try { return localStorage.getItem('kc-theme'); } catch (e) { return null; } };
+    const apply = (t) => root.setAttribute('data-theme', t);
 
-    let lastScrollY = window.scrollY;
-
-    window.addEventListener('scroll', () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY > 40) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-
-      lastScrollY = currentScrollY;
-    }, { passive: true });
-  }
-
-  /* ==========================================================================
-     3. MOBILE NAVIGATION DRAWER
-     ========================================================================== */
-  function initMobileNav() {
-    const toggleBtn = document.querySelector('.mobile-toggle');
-    const drawer = document.querySelector('.mobile-drawer');
-    const backdrop = document.querySelector('.drawer-backdrop');
-    const mobileLinks = document.querySelectorAll('.mobile-drawer .nav-link');
-
-    if (!toggleBtn || !drawer || !backdrop) return;
-
-    function openMenu() {
-      toggleBtn.classList.add('is-active');
-      toggleBtn.setAttribute('aria-expanded', 'true');
-      drawer.classList.add('is-open');
-      backdrop.classList.add('is-active');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeMenu() {
-      toggleBtn.classList.remove('is-active');
-      toggleBtn.setAttribute('aria-expanded', 'false');
-      drawer.classList.remove('is-open');
-      backdrop.classList.remove('is-active');
-      document.body.style.overflow = '';
-    }
-
-    toggleBtn.addEventListener('click', () => {
-      const isOpen = drawer.classList.contains('is-open');
-      if (isOpen) {
-        closeMenu();
-      } else {
-        openMenu();
-      }
-    });
-
-    backdrop.addEventListener('click', closeMenu);
-
-    mobileLinks.forEach(link => {
-      link.addEventListener('click', closeMenu);
-    });
-
-    // Close on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && drawer.classList.contains('is-open')) {
-        closeMenu();
-      }
-    });
-  }
-
-  /* ==========================================================================
-     4. SMOOTH SCROLL WITH HEADER OFFSET
-     ========================================================================== */
-  function initSmoothScroll() {
-    const links = document.querySelectorAll('a[href^="#"]');
-    const header = document.querySelector('.site-header');
-
-    links.forEach(link => {
-      link.addEventListener('click', (e) => {
-        const targetId = link.getAttribute('href');
-        if (targetId === '#' || !targetId.startsWith('#')) return;
-
-        const targetEl = document.querySelector(targetId);
-        if (targetEl) {
-          e.preventDefault();
-          const headerOffset = (header ? header.offsetHeight : 70) + 10;
-          const elementPosition = targetEl.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-
-          // Accessibility: set focus
-          targetEl.setAttribute('tabindex', '-1');
-          targetEl.focus({ preventScroll: true });
-        }
+    $$('.theme-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        apply(next);
+        try { localStorage.setItem('kc-theme', next); } catch (e) { /* storage blocked */ }
       });
     });
+
+    media.addEventListener('change', e => { if (!stored()) apply(e.matches ? 'dark' : 'light'); });
   }
 
-  /* ==========================================================================
-     5. GALLERY FILTER & RENDERING
-     ========================================================================== */
-  function initGallery() {
-    const container = document.getElementById('gallery-grid');
-    const filterBtns = document.querySelectorAll('.filter-btn');
+  /* ---------- Header ---------- */
+  function initHeader() {
+    const header = $('.site-header');
+    if (!header) return;
+    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 10);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
 
-    if (!container || typeof galleryItems === 'undefined') return;
+  /* ---------- Mobile drawer ---------- */
+  function initDrawer() {
+    const drawer = $('#drawer');
+    const toggle = $('.menu-toggle');
+    const backdrop = $('.backdrop');
+    if (!drawer || !toggle) return;
 
-    activeGalleryItems = [...galleryItems];
+    const open = () => {
+      lastFocus = document.activeElement;
+      drawer.classList.add('is-open');
+      drawer.setAttribute('aria-hidden', 'false');
+      backdrop.classList.add('is-active');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      $('.drawer-close', drawer).focus();
+    };
+    const close = () => {
+      drawer.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', 'true');
+      backdrop.classList.remove('is-active');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      if (lastFocus) lastFocus.focus();
+    };
 
-    function renderGallery(items) {
-      container.innerHTML = '';
-      items.forEach((item, index) => {
-        const itemEl = document.createElement('article');
-        itemEl.className = 'gallery-item';
-        itemEl.setAttribute('data-category', item.category);
-        itemEl.setAttribute('data-index', index);
-        itemEl.setAttribute('tabindex', '0');
-        itemEl.setAttribute('role', 'button');
-        itemEl.setAttribute('aria-label', `Xem chi tiết ảnh: ${item.title}`);
+    toggle.addEventListener('click', open);
+    $('.drawer-close', drawer).addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+    $$('a', drawer).forEach(a => a.addEventListener('click', close));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('is-open')) close(); });
+  }
 
-        itemEl.innerHTML = `
-          <div class="gallery-thumb">
-            <img src="${item.src}" alt="${item.alt}" width="${item.width}" height="${item.height}" loading="lazy">
-            <div class="gallery-overlay-hint">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                <line x1="11" y1="8" x2="11" y2="14"></line>
-                <line x1="8" y1="11" x2="14" y2="11"></line>
-              </svg>
-            </div>
-          </div>
-          <div class="gallery-info">
-            <h3 class="gallery-item-title">${item.title}</h3>
-            <span class="gallery-item-client">${item.client} • ${item.categoryName}</span>
-          </div>
-        `;
+  /* ---------- Tabs (ARIA tablist) ---------- */
+  const tabApi = {};
 
-        itemEl.addEventListener('click', () => {
-          openLightbox(index);
-        });
+  function initTabs() {
+    $$('[data-tabs]').forEach(list => {
+      const tabs = $$('[role="tab"]', list);
+      const panels = tabs.map(t => document.getElementById(t.getAttribute('aria-controls')));
 
-        itemEl.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openLightbox(index);
+      const select = (tab, focus) => {
+        tabs.forEach((t, i) => {
+          const on = t === tab;
+          t.setAttribute('aria-selected', String(on));
+          t.tabIndex = on ? 0 : -1;
+          panels[i].hidden = !on;
+          if (on) {
+            panels[i].classList.remove('is-entering');
+            void panels[i].offsetWidth;
+            panels[i].classList.add('is-entering');
+            $$('.reveal', panels[i]).forEach(el => el.classList.add('is-visible'));
           }
         });
+        if (focus) tab.focus();
+      };
 
-        container.appendChild(itemEl);
+      tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => {
+          select(tab);
+          history.replaceState(null, '', '#' + tab.getAttribute('aria-controls'));
+        });
+        tab.addEventListener('keydown', e => {
+          let n = null;
+          if (e.key === 'ArrowRight') n = tabs[(i + 1) % tabs.length];
+          if (e.key === 'ArrowLeft') n = tabs[(i - 1 + tabs.length) % tabs.length];
+          if (e.key === 'Home') n = tabs[0];
+          if (e.key === 'End') n = tabs[tabs.length - 1];
+          if (n) { e.preventDefault(); select(n, true); }
+        });
       });
-    }
 
-    // Initial render
-    renderGallery(activeGalleryItems);
-
-    // Filtering logic
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        const filter = btn.getAttribute('data-filter');
-        if (filter === 'all') {
-          activeGalleryItems = [...galleryItems];
-        } else {
-          activeGalleryItems = galleryItems.filter(item => item.category === filter);
-        }
-        renderGallery(activeGalleryItems);
-      });
+      panels.forEach(p => { tabApi[p.id] = () => select(tabs[panels.indexOf(p)]); });
+      select(tabs.find(t => t.getAttribute('aria-selected') === 'true') || tabs[0]);
     });
   }
 
-  /* ==========================================================================
-     6. LIGHTBOX INTERACTIVE VIEWER
-     ========================================================================== */
-  function initLightbox() {
-    const lightbox = document.getElementById('gallery-lightbox');
-    if (!lightbox) return;
+  /* Deep links like #thi-cong-gian-hang open the right tab, then scroll to the tab bar. */
+  function initHashNavigation() {
+    const go = (hash, smooth) => {
+      const id = decodeURIComponent((hash || '').slice(1));
+      if (!id || !tabApi[id]) return false;
+      tabApi[id]();
+      const list = document.getElementById(id).parentElement.querySelector('[data-tabs]');
+      (list || document.getElementById(id)).scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+      return true;
+    };
 
-    const closeBtn = lightbox.querySelector('.lightbox-close');
-    const prevBtn = lightbox.querySelector('.lightbox-prev');
-    const nextBtn = lightbox.querySelector('.lightbox-next');
-
-    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
-    if (prevBtn) prevBtn.addEventListener('click', prevLightboxImage);
-    if (nextBtn) nextBtn.addEventListener('click', nextLightboxImage);
-
-    // Close when clicking backdrop
-    lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) {
-        closeLightbox();
+    document.addEventListener('click', e => {
+      const a = e.target.closest('a[href^="#"]');
+      if (a && go(a.getAttribute('href'), true)) {
+        e.preventDefault();
+        history.pushState(null, '', a.getAttribute('href'));
       }
     });
+    window.addEventListener('hashchange', () => go(location.hash, true));
+    if (location.hash) requestAnimationFrame(() => go(location.hash, false));
+  }
 
-    // Keyboard navigation
-    document.addEventListener('keydown', (e) => {
-      if (!lightbox.classList.contains('is-open')) return;
+  /* ---------- Gallery + lightbox ---------- */
+  function initGallery() {
+    const grid = $('#gallery');
+    const moreBtn = $('#gallery-more');
+    const lb = $('#lightbox');
+    if (!grid || typeof galleryItems === 'undefined') return;
 
-      if (e.key === 'Escape') closeLightbox();
-      if (e.key === 'ArrowLeft') prevLightboxImage();
-      if (e.key === 'ArrowRight') nextLightboxImage();
+    const PAGE = 8;
+    let items = galleryItems.slice();
+    let shown = PAGE;
+    let index = 0;
+
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    const render = () => {
+      grid.innerHTML = items.slice(0, shown).map((it, i) => `
+        <button type="button" class="gallery-item" data-i="${i}" aria-label="Phóng to ảnh: ${esc(it.title)}">
+          <img src="${it.src}" srcset="${it.srcset}" sizes="(max-width: 640px) 46vw, (max-width: 960px) 31vw, ${i % 6 === 0 ? '560px' : '280px'}"
+               width="${it.width}" height="${it.height}" alt="${esc(it.alt)}" loading="lazy" decoding="async">
+          <span class="gallery-cap">${esc(it.title)}<small>${esc(it.client)} · ${esc(it.categoryName)}</small></span>
+        </button>`).join('');
+      moreBtn.hidden = shown >= items.length;
+    };
+
+    $$('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
+      $$('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+      const f = btn.dataset.filter;
+      items = f === 'all' ? galleryItems.slice() : galleryItems.filter(it => it.category === f);
+      shown = PAGE;
+      render();
+    }));
+    moreBtn.addEventListener('click', () => { shown += PAGE; render(); });
+    grid.addEventListener('click', e => {
+      const b = e.target.closest('.gallery-item');
+      if (b) open(Number(b.dataset.i));
+    });
+    render();
+
+    if (!lb) return;
+    const img = $('img', lb);
+    const show = () => {
+      const it = items[index];
+      img.src = it.full;
+      img.alt = it.alt;
+      $('.lb-title', lb).textContent = it.title;
+      $('.lb-meta', lb).textContent = `${it.client} · ${it.location} (${index + 1}/${items.length})`;
+    };
+    const open = i => {
+      lastFocus = document.activeElement;
+      index = i;
+      show();
+      lb.classList.add('is-open');
+      lb.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      $('.lb-close', lb).focus();
+    };
+    const close = () => {
+      lb.classList.remove('is-open');
+      lb.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (lastFocus) lastFocus.focus();
+    };
+    const step = d => { index = (index + d + items.length) % items.length; show(); };
+
+    $('.lb-close', lb).addEventListener('click', close);
+    $('.lb-prev', lb).addEventListener('click', () => step(-1));
+    $('.lb-next', lb).addEventListener('click', () => step(1));
+    lb.addEventListener('click', e => { if (e.target === lb) close(); });
+    document.addEventListener('keydown', e => {
+      if (!lb.classList.contains('is-open')) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') step(-1);
+      if (e.key === 'ArrowRight') step(1);
+    });
+    let x0 = null;
+    lb.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+      x0 = null;
     });
   }
 
-  function openLightbox(index) {
-    const lightbox = document.getElementById('gallery-lightbox');
-    if (!lightbox || !activeGalleryItems[index]) return;
+  /* ---------- Quote modal ---------- */
+  let closeModal = () => {};
 
-    currentLightboxIndex = index;
-    updateLightboxContent();
-
-    lightbox.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeLightbox() {
-    const lightbox = document.getElementById('gallery-lightbox');
-    if (!lightbox) return;
-
-    lightbox.classList.remove('is-open');
-    document.body.style.overflow = '';
-  }
-
-  function prevLightboxImage() {
-    if (currentLightboxIndex > 0) {
-      currentLightboxIndex--;
-    } else {
-      currentLightboxIndex = activeGalleryItems.length - 1;
-    }
-    updateLightboxContent();
-  }
-
-  function nextLightboxImage() {
-    if (currentLightboxIndex < activeGalleryItems.length - 1) {
-      currentLightboxIndex++;
-    } else {
-      currentLightboxIndex = 0;
-    }
-    updateLightboxContent();
-  }
-
-  function updateLightboxContent() {
-    const lightbox = document.getElementById('gallery-lightbox');
-    if (!lightbox) return;
-
-    const item = activeGalleryItems[currentLightboxIndex];
-    const img = lightbox.querySelector('.lightbox-image');
-    const title = lightbox.querySelector('.lightbox-title');
-    const meta = lightbox.querySelector('.lightbox-meta');
-
-    if (img) {
-      img.src = item.src;
-      img.alt = item.alt;
-    }
-
-    if (title) {
-      title.textContent = item.title;
-    }
-
-    if (meta) {
-      meta.textContent = `${item.client} • ${item.location} (${currentLightboxIndex + 1}/${activeGalleryItems.length})`;
-    }
-  }
-
-  /* ==========================================================================
-     7. QUOTE MODAL POPUP
-     ========================================================================== */
-  function initQuoteModal() {
-    const modal = document.getElementById('quote-modal');
-    const triggers = document.querySelectorAll('[data-open-modal="quote"]');
+  function initModal() {
+    const modal = $('#quote-modal');
     if (!modal) return;
 
-    const closeBtn = modal.querySelector('.modal-close');
-
-    function openModal() {
-      modal.classList.add('is-active');
+    const open = (service) => {
+      lastFocus = document.activeElement;
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
-      const firstInput = modal.querySelector('input');
-      if (firstInput) setTimeout(() => firstInput.focus(), 100);
-    }
-
-    function closeModal() {
-      modal.classList.remove('is-active');
+      const sel = $('select[name="service"]', modal);
+      if (service && sel) sel.value = service;
+      setTimeout(() => { const f = $('input', modal); if (f) f.focus(); }, 60);
+    };
+    closeModal = () => {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
+      if (lastFocus) lastFocus.focus();
+    };
+
+    document.addEventListener('click', e => {
+      const t = e.target.closest('[data-open-modal]');
+      if (t) { e.preventDefault(); open(t.dataset.service || guessService(t)); }
+    });
+    $('.modal-close', modal).addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => {
+      if (!modal.classList.contains('is-open')) return;
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Tab') trapFocus(e, $('.modal-dialog', modal));
+    });
+  }
+
+  // Preselect a service based on which tab panel the CTA lives in.
+  function guessService(el) {
+    const panel = el.closest('.tab-panel');
+    const map = {
+      'thiet-ke-2d-3d': 'thiết kế 2D - 3D',
+      'thi-cong-gian-hang': 'thi công gian hàng',
+      'trang-thiet-bi-su-kien': 'trang thiết bị sự kiện',
+      'bieu-dien-nghe-thuat': 'biểu diễn nghệ thuật',
+      'dien-tap-tren-bien': 'diễn tập',
+      'tour-du-lich': 'tour du lịch doanh nghiệp',
+      'team-building': 'team building',
+    };
+    return panel ? map[panel.id] : '';
+  }
+
+  function trapFocus(e, box) {
+    const f = $$('a[href], button:not([disabled]), input:not([tabindex="-1"]), select, textarea', box).filter(x => x.offsetParent !== null);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+
+  /* ---------- Lead forms ---------- */
+  function initForms() {
+    $$('.lead-form').forEach(form => {
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        if (!validate(form)) return;
+
+        const data = Object.fromEntries(new FormData(form).entries());
+        if (data.website) return; // honeypot: bots fill hidden field
+        delete data.website;
+        data.agree = 'yes';
+        data.page = location.href;
+        data.submittedAt = new Date().toISOString();
+
+        const btn = $('button[type="submit"]', form);
+        const label = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Đang gửi...';
+
+        try {
+          await sendLead(data);
+          form.reset();
+          if (form.closest('#quote-modal')) closeModal();
+          toast('Gửi yêu cầu thành công!', 'Cảm ơn quý khách. Chuyên viên KC Event sẽ liên hệ trong 15–30 phút.');
+        } catch (err) {
+          const hot = cfg ? cfg.contact.hotlineDisplay : '0981.941.820';
+          toast('Chưa gửi được yêu cầu', 'Vui lòng thử lại hoặc gọi hotline ' + hot + '.', true);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = label;
+        }
+      });
+
+      $$('input, select, textarea', form).forEach(el => {
+        el.addEventListener('input', () => clearError(el));
+        el.addEventListener('change', () => clearError(el));
+      });
+    });
+  }
+
+  async function sendLead(data) {
+    const endpoint = cfg && cfg.leadEndpoint;
+    if (endpoint) {
+      // Apps Script web apps don't return CORS headers, so post as simple no-cors request.
+      await fetch(endpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data),
+      });
+      return;
     }
-
-    triggers.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openModal();
-      });
-    });
-
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('is-active')) {
-        closeModal();
-      }
-    });
+    // Fallback: open a prefilled email so the lead is never lost.
+    const to = cfg ? cfg.contact.email : 'truyenthongsukienkcgroup@gmail.com';
+    const body = [
+      'Họ tên: ' + data.fullname, 'SĐT: ' + data.phone, 'Email: ' + (data.email || ''),
+      'Công ty: ' + data.company, 'Dịch vụ: ' + data.service, 'Số khách: ' + data.guests,
+      'Ghi chú: ' + (data.notes || ''),
+    ].join('\n');
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent('Yêu cầu báo giá – ' + data.company)}&body=${encodeURIComponent(body)}`;
   }
 
-  /* ==========================================================================
-     8. FORM VALIDATION & SUBMISSION HANDLER
-     ========================================================================== */
-  function initFormValidation() {
-    const forms = document.querySelectorAll('form[data-validate="true"]');
+  function validate(form) {
+    let ok = true;
+    const req = (name, test, msg) => {
+      const el = form.elements[name];
+      if (!el) return;
+      if (!test(el.value.trim())) { showError(el, msg); ok = false; } else clearError(el);
+    };
+    req('fullname', v => v.length >= 2, 'Vui lòng nhập họ tên (tối thiểu 2 ký tự).');
+    req('phone', v => /^(0|\+84)(3|5|7|8|9)\d{8}$/.test(v.replace(/[\s.-]/g, '')), 'Số điện thoại chưa hợp lệ (10 số).');
+    req('email', v => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Email chưa đúng định dạng.');
+    req('company', v => v.length > 0, 'Vui lòng nhập tên công ty / tổ chức.');
+    req('service', v => v.length > 0, 'Vui lòng chọn dịch vụ.');
 
-    forms.forEach(form => {
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
+    const agree = form.elements.agree;
+    const wrap = agree.closest('.form-check');
+    wrap.classList.toggle('is-invalid', !agree.checked);
+    if (!agree.checked) ok = false;
 
-        let isValid = true;
-
-        // Name
-        const nameInput = form.querySelector('[name="fullname"]');
-        if (nameInput) {
-          if (!nameInput.value.trim() || nameInput.value.trim().length < 2) {
-            setFieldInvalid(nameInput, 'Vui lòng nhập họ và tên (tối thiểu 2 ký tự)');
-            isValid = false;
-          } else {
-            setFieldValid(nameInput);
-          }
-        }
-
-        // Phone (Vietnam phone number standard: 10 digits starting with 0)
-        const phoneInput = form.querySelector('[name="phone"]');
-        const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
-        if (phoneInput) {
-          const phoneVal = phoneInput.value.trim().replace(/\s|\./g, '');
-          if (!phoneRegex.test(phoneVal)) {
-            setFieldInvalid(phoneInput, 'Vui lòng nhập số điện thoại hợp lệ (10 chữ số)');
-            isValid = false;
-          } else {
-            setFieldValid(phoneInput);
-          }
-        }
-
-        // Email (optional, but if provided must be valid)
-        const emailInput = form.querySelector('[name="email"]');
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (emailInput && emailInput.value.trim()) {
-          if (!emailRegex.test(emailInput.value.trim())) {
-            setFieldInvalid(emailInput, 'Email không đúng định dạng');
-            isValid = false;
-          } else {
-            setFieldValid(emailInput);
-          }
-        }
-
-        // Company
-        const companyInput = form.querySelector('[name="company"]');
-        if (companyInput) {
-          if (!companyInput.value.trim()) {
-            setFieldInvalid(companyInput, 'Vui lòng nhập tên công ty hoặc doanh nghiệp');
-            isValid = false;
-          } else {
-            setFieldValid(companyInput);
-          }
-        }
-
-        // Service
-        const serviceSelect = form.querySelector('[name="service"]');
-        if (serviceSelect) {
-          if (!serviceSelect.value) {
-            setFieldInvalid(serviceSelect, 'Vui lòng chọn loại dịch vụ yêu cầu');
-            isValid = false;
-          } else {
-            setFieldValid(serviceSelect);
-          }
-        }
-
-        // Agreement Checkbox
-        const agreeCheck = form.querySelector('[name="agree"]');
-        if (agreeCheck) {
-          if (!agreeCheck.checked) {
-            const wrap = agreeCheck.closest('.form-checkbox-wrap');
-            if (wrap) wrap.style.outline = '1px solid #ef4444';
-            isValid = false;
-          } else {
-            const wrap = agreeCheck.closest('.form-checkbox-wrap');
-            if (wrap) wrap.style.outline = 'none';
-          }
-        }
-
-        if (isValid) {
-          // Success Feedback
-          const submitBtn = form.querySelector('button[type="submit"]');
-          const originalText = submitBtn ? submitBtn.innerHTML : 'Gửi yêu cầu';
-
-          if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `
-              <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;">
-                <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
-                <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
-              </svg>
-              Đang gửi yêu cầu...
-            `;
-          }
-
-          // Simulate brief processing for pleasant UX
-          setTimeout(() => {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.innerHTML = originalText;
-            }
-
-            form.reset();
-
-            // Close modal if form is in modal
-            const parentModal = form.closest('.modal-overlay');
-            if (parentModal) {
-              parentModal.classList.remove('is-active');
-              document.body.style.overflow = '';
-            }
-
-            showToast(
-              'Gửi yêu cầu thành công!',
-              'Cảm ơn quý khách. Chuyên viên tư vấn của KC Event sẽ liên hệ lại trong vòng 15-30 phút.'
-            );
-          }, 600);
-        }
-      });
-    });
+    if (!ok) { const bad = $('.is-invalid', form); if (bad && bad.focus) bad.focus(); }
+    return ok;
   }
 
-  function setFieldInvalid(el, msg) {
+  function showError(el, msg) {
     el.classList.add('is-invalid');
-    let errorEl = el.parentElement.querySelector('.form-error');
-    if (!errorEl) {
-      errorEl = document.createElement('span');
-      errorEl.className = 'form-error';
-      el.parentElement.appendChild(errorEl);
+    el.setAttribute('aria-invalid', 'true');
+    let err = el.parentElement.querySelector('.form-error');
+    if (!err) {
+      err = document.createElement('span');
+      err.className = 'form-error';
+      err.id = el.id + '-error';
+      el.parentElement.appendChild(err);
+      el.setAttribute('aria-describedby', err.id);
     }
-    errorEl.textContent = msg;
-    errorEl.style.display = 'block';
+    err.textContent = msg;
   }
 
-  function setFieldValid(el) {
+  function clearError(el) {
     el.classList.remove('is-invalid');
-    const errorEl = el.parentElement.querySelector('.form-error');
-    if (errorEl) {
-      errorEl.style.display = 'none';
-    }
+    el.removeAttribute('aria-invalid');
+    const err = el.parentElement && el.parentElement.querySelector('.form-error');
+    if (err) err.textContent = '';
   }
 
-  /* ==========================================================================
-     9. TOAST NOTIFICATION SYSTEM
-     ========================================================================== */
-  function showToast(title, message) {
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.className = 'toast-container';
-      document.body.appendChild(container);
+  function toast(title, msg, isError) {
+    let wrap = $('.toast-wrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'toast-wrap';
+      wrap.setAttribute('role', 'status');
+      wrap.setAttribute('aria-live', 'polite');
+      document.body.appendChild(wrap);
     }
-
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = `
-      <div class="toast-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-      </div>
-      <div class="toast-content">
-        <h4 class="toast-title">${title}</h4>
-        <p class="toast-message">${message}</p>
-      </div>
-    `;
-
-    container.appendChild(toast);
-
-    // Animation trigger
-    requestAnimationFrame(() => {
-      toast.classList.add('show');
-    });
-
-    // Auto remove
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => {
-        toast.remove();
-      }, 300);
-    }, 4500);
+    const t = document.createElement('div');
+    t.className = 'toast' + (isError ? ' is-error' : '');
+    t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${isError
+      ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
+      : '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'}</svg><div><strong></strong><p></p></div>`;
+    $('strong', t).textContent = title;
+    $('p', t).textContent = msg;
+    wrap.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 5000);
   }
 
+  /* ---------- Scroll reveal ---------- */
+  function initReveal() {
+    // Duplicate marquee items so the CSS loop (-50%) is seamless.
+    const track = $('.marquee-track');
+    if (track && !track.dataset.cloned) {
+      track.dataset.cloned = '1';
+      Array.from(track.children).forEach(li => {
+        const c = li.cloneNode(true);
+        c.setAttribute('aria-hidden', 'true');
+        track.appendChild(c);
+      });
+    }
+
+    const els = $$('.reveal');
+    if (!('IntersectionObserver' in window)) { els.forEach(el => el.classList.add('is-visible')); return; }
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (en.isIntersecting) { en.target.classList.add('is-visible'); io.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    els.forEach(el => io.observe(el));
+  }
 })();
